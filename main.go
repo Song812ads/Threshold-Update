@@ -21,7 +21,7 @@ func mapThresholdsToString(thresholds []Threshold) string {
 	var builder strings.Builder
 
 	for _, th := range thresholds {
-		builder.WriteString(fmt.Sprintf(" WHEN dat > %.2f AND dat < %.2f THEN %s  ", th.start, th.end, th.status))
+		builder.WriteString(fmt.Sprintf(" WHEN dat > %.2f AND dat < %.2f THEN  \"%s\"  ", th.start, th.end, th.status))
 	}
 
 	return builder.String()
@@ -86,12 +86,14 @@ func UpdateThreshold(factory_id string, field string, thres []Threshold, method 
 
 	data = map[string]interface{}{
 		"id":  rule_name,
-		"sql": fmt.Sprintf(" SELECT %s.`d-ata` AS dat, CASE %s ELSE M0 END AS dataClass FROM %s  WHERE  %s.`d-ata` != NIL", stream_name, query_String, stream_name, stream_name),
+		"sql": fmt.Sprintf(" SELECT %s.`d-ata` AS dat, CASE %s ELSE \"M0\" END AS dataClass FROM %s  WHERE  %s.`d-ata` != NIL", stream_name, query_String, stream_name, stream_name),
 		"actions": []map[string]interface{}{
 			{
 				"mqtt": map[string]interface{}{
-					"server": "tcp://172.18.0.4:1883",
-					"topic":  "demoSink",
+					"server":       "tcp://172.18.0.21:1883",
+					"topic":        "demoSink",
+					"sendSingle":   true,
+					"dataTemplate": fmt.Sprintf("{\"FactoryId\":\"%s\", \"Name\": \"%s\", \"Level\": \"{{.dataClass}}\", \"Value\": {{.dat}} }", factory_id, field),
 				},
 			},
 		},
@@ -125,7 +127,7 @@ func main() {
 		{start: 101, end: 200, status: "Medium"},
 		{start: 201, end: 300, status: "High"},
 	}
-	if err := UpdateThreshold("s12434", "h2434", thresholds, "POST"); err != nil {
+	if err := UpdateThreshold("hihi1", "haha1", thresholds, "POST"); err != nil {
 		fmt.Println(err)
 	}
 }
